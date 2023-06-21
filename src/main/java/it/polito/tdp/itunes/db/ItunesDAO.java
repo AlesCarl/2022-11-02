@@ -99,8 +99,12 @@ public class ItunesDAO {
 		return result;
 	}
 	
+	
 	public List<Genre> getAllGenres(){
-		final String sql = "SELECT * FROM Genre";
+		
+		final String sql = "SELECT distinct * "
+				+ "FROM Genre g "
+				+ "order by g.`Name` asc ";
 		List<Genre> result = new LinkedList<>();
 		
 		try {
@@ -118,6 +122,85 @@ public class ItunesDAO {
 		}
 		return result;
 	}
+	
+public Track getMinTrack( Genre t){ // in secondi
+		
+		final String sql = "SELECT  t.* "
+				+ "FROM genre g, track t  "
+				+ "where g.`GenreId`= t.`GenreId` and g.`GenreId`= ? "
+				+ "order by t.`Milliseconds` asc ";
+		
+		Track min = null; 
+		List<Track> result = new LinkedList<>();
+		
+		
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, t.getGenreId());
+			ResultSet res = st.executeQuery();
+
+
+			while (res.next()) {
+				
+				result.add(new Track(res.getInt("TrackId"), res.getString("Name"), 
+						res.getString("Composer"), res.getInt("Milliseconds"), 
+						res.getInt("Bytes"),res.getDouble("UnitPrice")));
+			
+			}
+			
+			
+			min= result.get(0); 
+			
+			conn.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("SQL Error");
+		}
+		return min;
+	}
+
+public List<Track> getTrack( int min, int max, Genre t){ // in secondi,  per i vertici 
+	
+	final String sql = "SELECT  t.* "
+			+ "FROM genre g, track t  "
+			+ "where g.`GenreId`= t.`GenreId` and t.`Milliseconds`> (1000*?)  and t.`Milliseconds`< (1000*?) "
+			+ "and t.`GenreId`=  ? "
+			+ "order by t.`Milliseconds` asc ";
+	
+	
+	List<Track> result = new LinkedList<>();
+	
+	
+	try {
+		Connection conn = DBConnect.getConnection();
+		PreparedStatement st = conn.prepareStatement(sql);
+		
+		st.setInt(1, min);
+		st.setInt(2, max);
+		st.setInt(3, t.getGenreId());
+		
+		ResultSet res = st.executeQuery();
+
+
+		while (res.next()) {
+			
+			result.add(new Track(res.getInt("TrackId"), res.getString("Name"), 
+					res.getString("Composer"), res.getInt("Milliseconds"), 
+					res.getInt("Bytes"),res.getDouble("UnitPrice")));
+		
+		}
+		
+		
+		conn.close();
+	} catch (SQLException e) {
+		e.printStackTrace();
+		throw new RuntimeException("SQL Error");
+	}
+	return  result;
+}
+	
+
 	
 	public List<MediaType> getAllMediaTypes(){
 		final String sql = "SELECT * FROM MediaType";
@@ -137,6 +220,33 @@ public class ItunesDAO {
 			throw new RuntimeException("SQL Error");
 		}
 		return result;
+	}
+
+	public List<Integer> getSizePlayList(Track s1) {
+		
+	
+			final String sql = "SELECT distinct  pt.`PlaylistId` "
+					+ "FROM track t  , playlisttrack pt  "
+					+ "where t.`TrackId`= ? and pt.`TrackId`= t.`TrackId`";
+			
+			List<Integer> result = new LinkedList<>();
+			
+			try {
+				Connection conn = DBConnect.getConnection();
+				PreparedStatement st = conn.prepareStatement(sql);
+				st.setInt(1, s1.getTrackId());
+				ResultSet res = st.executeQuery();
+
+				while (res.next()) {
+					result.add(res.getInt("PlaylistId"));
+				}
+				
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+				throw new RuntimeException("SQL Error");
+			}
+			return result;
 	}
 
 	

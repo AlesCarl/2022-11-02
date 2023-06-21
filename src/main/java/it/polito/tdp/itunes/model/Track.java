@@ -18,6 +18,7 @@ public class Track {
 		this.unitPrice = unitPrice;
 	}
 	
+	
 	public Integer getTrackId() {
 		return trackId;
 	}
@@ -82,7 +83,7 @@ public class Track {
 
 	@Override
 	public String toString() {
-		return name;
+		return name+"\n";
 	}
 	
 	

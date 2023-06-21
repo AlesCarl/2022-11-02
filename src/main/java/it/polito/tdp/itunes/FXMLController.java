@@ -5,9 +5,14 @@
 package it.polito.tdp.itunes;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 
+import it.polito.tdp.itunes.model.Genre;
 import it.polito.tdp.itunes.model.Model;
+import it.polito.tdp.itunes.model.Track;
+import it.polito.tdp.itunes.model.TrackTime;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -32,7 +37,7 @@ public class FXMLController {
     private Button btnPlaylist; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbGenere"
-    private ComboBox<?> cmbGenere; // Value injected by FXMLLoader
+    private ComboBox<Genre> cmbGenere; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtDTOT"
     private TextField txtDTOT; // Value injected by FXMLLoader
@@ -46,13 +51,67 @@ public class FXMLController {
     @FXML // fx:id="txtResult"
     private TextArea txtResult; // Value injected by FXMLLoader
 
+    
     @FXML
     void doCalcolaPlaylist(ActionEvent event) {
 
+    	int durataTot; 
+    	try {
+       	 durataTot= Integer.parseInt(txtMin.getText()); // IN minuti
+       	 
+       	}catch(NumberFormatException e) {
+   		txtResult.setText("Il valore deve essere un  numero");
+   		return;
+   	}
+    	
+    	 
+    	 TrackTime trt= model.getPercorso(durataTot*60000);  // ore è in ms
+    	 
+       	txtResult.appendText("\nPercorso Migliore, che dura un totale di minuti pari a : "+trt.getDurata()/60000+" è : ");
+       	txtResult.appendText("\n "+trt.getPercorso());
+
+    	
+    	
+    	
+    	
     }
+    
+    
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
+    	
+    	int minInput; 
+    	int maxInput; 
+    	
+    	Genre gg= this.cmbGenere.getValue();  // da input
+    	
+    	int minConsentito= (model.getMin(gg).getMilliseconds())/1000;  // verifica min in SECONDI
+    	
+    	try {
+    	 minInput= Integer.parseInt(txtMin.getText()); // IN SECONDI
+    	 maxInput= Integer.parseInt(txtMax.getText()); // IN SECONDI
+    	
+    	}catch(NumberFormatException e) {
+		txtResult.setText("Il valore minimo e massimo devono essere dei numeri");
+		return;
+	}
+    	
+    	if(minInput<minConsentito) {
+    		txtResult.setText("Il valore minimo deve essere maggiore di"+ minConsentito); 
+    		return; 
+    	}
+    	
+    	model.creaGrafo(minInput, maxInput, gg);
+    	
+    	
+    	List<Set<Track>> listOfSet =model.getComponentiConnesse();
+    	
+    	for(Set<Track> setTrack: listOfSet) {
+           this.txtResult.appendText("\nComponente connessa con un numero di vertici pari a: " + setTrack.size() );
+           this.txtResult.appendText("  --  inseriti in  " + model.getNumPlayLisDistinct(setTrack)+" playlist" );
+		}
+    	
 
     }
 
@@ -70,6 +129,12 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	this.setCmbx(); 
     }
+
+	private void setCmbx() {
+	  this.cmbGenere.getItems().addAll(model.getGeneres()); 
+		
+	}
 
 }
