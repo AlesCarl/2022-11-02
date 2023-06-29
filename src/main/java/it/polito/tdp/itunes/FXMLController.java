@@ -57,15 +57,17 @@ public class FXMLController {
 
     	int durataTot; 
     	try {
-       	 durataTot= Integer.parseInt(txtMin.getText()); // IN minuti
+       	 durataTot= Integer.parseInt(this.txtDTOT.getText()); // IN minuti
        	 
        	}catch(NumberFormatException e) {
    		txtResult.setText("Il valore deve essere un  numero");
    		return;
    	}
     	
-    	 
-    	 TrackTime trt= model.getPercorso(durataTot*60000);  // ore è in ms
+    	 int duratta= durataTot*60000; 
+     	System.out.println("\n duratta: "+duratta);
+
+    	 TrackTime trt= model.getPercorso(duratta);  // ore è in ms
     	 
        	txtResult.appendText("\nPercorso Migliore, che dura un totale di minuti pari a : "+trt.getDurata()/60000+" è : ");
        	txtResult.appendText("\n "+trt.getPercorso());

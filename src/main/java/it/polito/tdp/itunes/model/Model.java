@@ -124,6 +124,7 @@ public class Model {
 	public TrackTime getPercorso ( int durataTotMSec) { // input in ms  ...
 		
 		List <Track> parziale = new ArrayList<>() ; 
+		
 		Set<Track> compConnessa= this.getComponentiConnessaMax(); 
 		
 		this.bestPercorso= new ArrayList<>() ; 
@@ -134,13 +135,26 @@ public class Model {
 		
 		parziale.add(tMin);
 		int countDuratams = tMin.getMilliseconds(); 
-		ricorsione(parziale,compConnessa, durataTotMSec, countDuratams ); 
+		ricorsione(parziale, compConnessa, durataTotMSec ,countDuratams); 
 		
 		
-		
-		TrackTime trt= new TrackTime(bestPercorso,countDuratams); 
+     	int durataMS= getDurata(bestPercorso); 
+
+		//TrackTime trt= new TrackTime(bestPercorso,countDuratams); 
+
+	    TrackTime trt= new TrackTime(bestPercorso,durataMS); 
 		
 		return trt;
+		
+	}
+	
+	public int getDurata(List<Track> list) {
+		
+		int durataaMS= 0;
+		for(Track tt: list) {
+			durataaMS+=tt.getMilliseconds();
+		}
+		return durataaMS; 
 		
 	}
     
@@ -162,24 +176,31 @@ public class Model {
 
 
 
-	private void ricorsione(List<Track> parziale, Set<Track> compConnessa, int durataTotMSec, int countDuratams) {
+    private void ricorsione(List<Track> parziale, Set<Track> compConnessa, int durataTotMSec, int countDuratams) {
+//	private void ricorsione(List<Track> parziale, Set<Track> compConnessa, int durataTotMSec) {
+
 		
 		Track current = parziale.get(parziale.size()-1);
 		compConnessa.remove(current); 
 
 		/** condizione uscita **/ 
-		if(countDuratams > durataTotMSec) {
+
+
+		if(getDurata(parziale) > durataTotMSec) {  
+		//if(countDuratams > durataTotMSec) {  
 			return; 
-		}
+		} 
+
 		
 		// se non ha sforato, posso settare l'eventuale nuovo best percorso.
 		if(parziale.size() > bestSize) {
+			
 			bestSize= parziale.size(); 
 			bestPercorso= new ArrayList<>(parziale); 
 			
+			
 		}
-		
-		
+
 		
 	     List<Track> successori= Graphs.successorListOf(graph, current);
 		
@@ -190,11 +211,12 @@ public class Model {
 				
 				parziale.add(tt);
 				countDuratams+=tt.getMilliseconds(); 
-				ricorsione(parziale, compConnessa,durataTotMSec,countDuratams); 
 				
+				ricorsione(parziale, compConnessa,durataTotMSec,countDuratams); 
+				//ricorsione(parziale, compConnessa,durataTotMSec); 
+
 				parziale.remove(tt);
 				countDuratams-=tt.getMilliseconds(); 
-				// "countDuratams" me lo sto portando dietro in modo correyyo? 
 				
 				
 			}
@@ -227,7 +249,7 @@ public class Model {
     		}
 	}
     	
-    	System.out.println("\n dimensione componente connessa max "+compMax.size());
+//    	System.out.println("\n dimensione componente connessa max "+compMax.size());
 		return compMax;
 
 	}
